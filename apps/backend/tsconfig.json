@@ -1,29 +1,35 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
+    /* Linguagem */
+    "target": "ES2021",
+    "lib": ["ES2021"],
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    /* Módulos - CommonJS para compatibilidade com NestJS */
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2023",
+    "forceConsistentCasingInFileNames": true,
+
+    /* Saída */
+    "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
+    "removeComments": true,
+
+    /* Checagem estrita */
+    "strict": true,
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "paths": {
-      // Isso força o Nest a ler o arquivo TS direto, e não o JS compilado
-      "@project-valkyrie/dtos": ["../../packages/dtos/src/index.ts"]
-    }
+    "skipLibCheck": true,
+
+    /* Otimizações */
+    "incremental": true,
+    "isolatedModules": true
   }
 }

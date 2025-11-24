@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
 import type { UserDTO } from '@project-valkyrie/dtos';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
@@ -15,9 +15,10 @@ export class AppController {
   getUser(): UserDTO {
     return {
       id: '123',
+      name: 'NestJS Backend',
       email: 'nest@monorepo.com',
-      fullName: 'NestJS Backend',
-      role: 'admin',
+      phoneNumber: '+1234567890',
+      age: 1,
     };
   }
 }
