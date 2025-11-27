@@ -14,9 +14,9 @@
     "lint": "pnpm -r lint",
     "clean": "rimraf **/node_modules **/dist **/.turbo **/.expo",
     "typecheck": "pnpm -r exec tsc --noEmit",
-    "backend:dev": "pnpm --filter backend start:dev",
-    "web:dev": "pnpm --filter web dev",
-    "mobile:dev": "pnpm --filter mobile start"
+    "dev:backend": "pnpm --filter backend start:dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:mobile": "pnpm --filter mobile start"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
