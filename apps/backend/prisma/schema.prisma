@@ -1,3 +1,4 @@
+// Configuração do Generator e Datasource
 generator client {
   provider = "prisma-client-js"
 }
@@ -6,17 +7,230 @@ datasource db {
   provider = "postgresql"
 }
 
+// --------------------------------------
+// ENUMS (Domínios de valores fixos)
+// --------------------------------------
+
+enum Role {
+  ADMIN
+  USER
+  MANAGER
+}
+
+enum UserStatus {
+  PENDING // Aguardando aprovação
+  ACTIVE // Ativo (após admin aprovar)
+  INACTIVE // Desativado/Removido
+}
+
+enum ContractType {
+  CLT
+  PJ
+  TEMPORARY
+  INTERNSHIP
+}
+
+enum DocumentType {
+  ACCOUNT_OPENING // Carta de Abertura de Conta
+  PRESENTATION_LETTER // Carta de Apresentação
+  TRANSPORT_VOUCHER // Ficha VT
+  SUBSTITUTION_FORM // Ficha de Substituição (Porto Alegre/Sensau)
+  TERMINATION_NOTICE // Comunicado de encerramento
+  RESCISSION_NOTICE // Rescisão antecipada
+  RENEWAL_NOTICE // Renovação Contratual
+  PAYSLIP // Contracheque
+  TIMESEET // Folha de Ponto
+  MATERIAL_DELIVERY // Relatório de entrega de materiais
+  OTHER
+}
+
+enum CheckType {
+  BSF
+  VR
+  FGTS
+  VT
+}
+
+enum MovementType {
+  IN // Entrada no estoque
+  OUT // Saída (entrega p/ funcionário)
+}
+
+// --------------------------------------
+// MÓDULO: AUTENTICAÇÃO E USUÁRIOS
+// --------------------------------------
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String // Senha hash (Argon2/Bcrypt)
+  name      String
+  role      Role       @default(USER)
+  status    UserStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relacionamento opcional: Um usuário pode estar ligado a um perfil de funcionário
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?   @unique
+
+  @@map("users")
+}
+
+// --------------------------------------
+// MÓDULO: RH E FUNCIONÁRIOS
+// --------------------------------------
+
 model Employee {
-  id            String   @id @default(uuid())
-  name          String
-  email         String   @unique
-  role          String
-  department    String
-  status        String   @default("active") // active, inactive
-  admissionDate DateTime
-  phone         String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id            String    @id @default(uuid())
+  fullName      String
+  cpf           String    @unique
+  rg            String?
+  birthDate     DateTime?
+  address       String?
+  phone         String?
+  jobTitle      String
+  admissionDate DateTime  @default(now())
+
+  // Relacionamentos
+  user           User?
+  contracts      Contract[]
+  documents      Document[]
+  payments       Payment[]
+  stockMovements StockMovement[] // Materiais entregues a este funcionário
+  complianceLogs ComplianceLog[] // Verificações de anomalia (BSF, VR, etc)
+  schedules      WorkSchedule[] // Escalas
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("employees")
+}
+
+model Contract {
+  id        String       @id @default(uuid())
+  type      ContractType
+  startDate DateTime
+  endDate   DateTime? // Nulo se for indeterminado
+  salary    Decimal      @db.Decimal(10, 2)
+  isActive  Boolean      @default(true)
+
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contracts")
+}
+
+// --------------------------------------
+// MÓDULO: GESTÃO DE DOCUMENTOS
+// --------------------------------------
+
+model Document {
+  id      String       @id @default(uuid())
+  title   String
+  type    DocumentType
+  fileUrl String? // URL do PDF/Arquivo no S3/MinIO
+
+  // O campo metadata armazena os dados específicos do formulário que gerou o doc
+  // Ex: { "banco": "Brasil", "agencia": "123" } para Abertura de Conta
+  metadata Json?
+
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+
+  createdAt DateTime @default(now())
+
+  @@map("documents")
+}
+
+// --------------------------------------
+// MÓDULO: FINANCEIRO E PAGAMENTOS
+// --------------------------------------
+
+model Payment {
+  id            String    @id @default(uuid())
+  amount        Decimal   @db.Decimal(10, 2)
+  referenceDate DateTime // Mês/Ano de referência
+  paidAt        DateTime?
+  description   String? // Ex: "Salário Base", "Adiantamento"
+
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId String
+
+  createdAt DateTime @default(now())
+
+  @@map("payments")
+}
+
+// --------------------------------------
+// MÓDULO: VERIFICAÇÃO DE ANOMALIA (BACKEND)
+// --------------------------------------
+
+model ComplianceLog {
+  id          String    @id @default(uuid())
+  checkType   CheckType // BSF, VR, FGTS, VT
+  isCompliant Boolean // True = OK, False = Anomalia
+  details     String? // Descrição da anomalia encontrada
+  checkedAt   DateTime  @default(now())
+
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId String
+
+  @@map("compliance_logs")
+}
+
+// --------------------------------------
+// MÓDULO: PATRIMÔNIO E PRODUTOS
+// --------------------------------------
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String
+  code        String? @unique // Código de patrimônio ou SKU
+  description String?
+  quantity    Int     @default(0) // Estoque atual
+  minQuantity Int     @default(5) // Para alerta de estoque baixo
+
+  movements StockMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("products")
+}
+
+model StockMovement {
+  id       String       @id @default(uuid())
+  type     MovementType // Entrada ou Saída
+  quantity Int
+  date     DateTime     @default(now())
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  // Se for saída, vincula a quem recebeu. Se for entrada, pode ser nulo.
+  recipient   Employee? @relation(fields: [recipientId], references: [id])
+  recipientId String?
+
+  @@map("stock_movements")
+}
+
+// --------------------------------------
+// MÓDULO: ESCALA (GERAÇÃO DE ESCALA)
+// --------------------------------------
+
+model WorkSchedule {
+  id        String   @id @default(uuid())
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+  location  String? // Posto de trabalho (Ex: Porto Alegre, Sede)
+
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId String
+
+  @@map("work_schedules")
 }
