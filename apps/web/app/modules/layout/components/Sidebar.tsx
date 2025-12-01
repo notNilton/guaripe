@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router";
+import { LayoutDashboard, Users, Settings, LogOut } from "lucide-react";
 import "./Sidebar.css";
 
 export function Sidebar() {
@@ -26,15 +27,15 @@ export function Sidebar() {
       
       <nav className="sidebar-nav">
         <Link to="/" className={getLinkClass("/")}>
-          <span className="nav-icon">🏠</span>
+          <LayoutDashboard className="nav-icon" size={20} />
           Dashboard
         </Link>
         <Link to="/employees" className={getLinkClass("/employees")}>
-          <span className="nav-icon">👥</span>
+          <Users className="nav-icon" size={20} />
           Funcionários
         </Link>
         <Link to="#" className="nav-link inactive">
-          <span className="nav-icon">⚙️</span>
+          <Settings className="nav-icon" size={20} />
           Configurações
         </Link>
       </nav>
@@ -48,6 +49,9 @@ export function Sidebar() {
             <p className="user-name">Administrador</p>
             <p className="user-email">admin@portoalegre.com</p>
           </div>
+          <button className="btn-logoff" title="Sair">
+            <LogOut size={20} />
+          </button>
         </div>
       </div>
     </aside>

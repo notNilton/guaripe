@@ -1,0 +1,46 @@
+.layout-container {
+  display: flex;
+  height: 100vh; /* h-screen */
+  background-color: #111827; /* bg-gray-900 */
+  color: white; /* text-white */
+}
+
+.main-content {
+  flex: 1 1 0%; /* flex-1 */
+  overflow: auto; /* overflow-auto */
+  position: relative; /* relative */
+}
+
+.background-effects {
+  position: absolute; /* absolute */
+  inset: 0; /* inset-0 */
+  z-index: 0; /* z-0 */
+  pointer-events: none; /* pointer-events-none */
+}
+
+.blob-blue {
+  position: absolute; /* absolute */
+  top: 0; /* top-0 */
+  right: 0; /* right-0 */
+  width: 500px; /* w-[500px] */
+  height: 500px; /* h-[500px] */
+  background-color: rgba(37, 99, 235, 0.1); /* bg-blue-600/10 */
+  border-radius: 9999px; /* rounded-full */
+  filter: blur(120px); /* blur-[120px] */
+}
+
+.blob-purple {
+  position: absolute; /* absolute */
+  bottom: 0; /* bottom-0 */
+  left: 0; /* left-0 */
+  width: 500px; /* w-[500px] */
+  height: 500px; /* h-[500px] */
+  background-color: rgba(147, 51, 234, 0.1); /* bg-purple-600/10 */
+  border-radius: 9999px; /* rounded-full */
+  filter: blur(120px); /* blur-[120px] */
+}
+
+.content-wrapper {
+  position: relative; /* relative */
+  z-index: 10; /* z-10 */
+}
