@@ -1,6 +1,6 @@
 import { redirect } from "react-router";
 import type { Route } from "./+types/login";
-import { LoginScreen } from "../modules/auth/screens/LoginScreen";
+import { LoginScreen } from "../modules/login/screens/LoginScreen";
 
 export function meta({}: Route.MetaArgs) {
   return [
