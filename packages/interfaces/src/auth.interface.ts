@@ -7,16 +7,15 @@ export interface IRegisterRequest {
   name: string;
   email: string;
   password: string;
-  backupEmail?: string;
-  phoneNumber: string;
-  age: number;
 }
+
+export type UserRole = 'ADMIN' | 'USER' | 'MANAGER';
+export type UserStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE';
 
 export interface IAuthResponse {
   id: string;
   name: string;
   email: string;
-  backupEmail?: string;
-  phoneNumber: string;
-  age: number;
+  role: UserRole;
+  status: UserStatus;
 }

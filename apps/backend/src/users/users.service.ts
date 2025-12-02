@@ -1,71 +1,60 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from '@project-valkyrie/dtos';
-import { IUserResponse } from '@project-valkyrie/interfaces';
-
-import { User } from './entities/user.entity';
+import { IUserResponse, UserRole, UserStatus } from '@project-valkyrie/interfaces';
+import { PrismaService } from '../prisma/prisma.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = []; // In-memory storage
+  constructor(private prisma: PrismaService) {}
 
-  create(createUserDto: CreateUserDto): IUserResponse {
-    const newUser: User = {
-      id: Date.now().toString(), // Simple ID generation
-      name: createUserDto.name,
-      email: createUserDto.email,
-      password: createUserDto.password,
-      backupEmail: createUserDto.backupEmail,
-      phoneNumber: createUserDto.phoneNumber,
-      age: createUserDto.age,
-    };
-    this.users.push(newUser);
+  async create(createUserDto: CreateUserDto): Promise<IUserResponse> {
+    const user = await this.prisma.user.create({
+      data: {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: createUserDto.password,
+      },
+    });
 
-    // Return without password
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userResponse } = newUser;
-    return userResponse;
+    return this.mapToResponse(user);
   }
 
-  findAll(): IUserResponse[] {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return this.users.map(({ password, ...user }) => user);
+  async findAll(): Promise<IUserResponse[]> {
+    const users = await this.prisma.user.findMany();
+    return users.map((user) => this.mapToResponse(user));
   }
 
-  findOne(id: string): IUserResponse | null {
-    const user = this.users.find((user) => user.id === id);
+  async findOne(id: string): Promise<IUserResponse | null> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) return null;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userResponse } = user;
-    return userResponse;
+    return this.mapToResponse(user);
   }
 
-  findByEmail(email: string): User | undefined {
-    return this.users.find((user) => user.email === email);
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { email } });
   }
 
-  update(id: string, updateUserDto: UpdateUserDto): IUserResponse | null {
-    const userIndex = this.users.findIndex((user) => user.id === id);
-    if (userIndex > -1) {
-      this.users[userIndex] = {
-        ...this.users[userIndex],
-        ...(updateUserDto as Partial<User>),
-      };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userResponse } = this.users[userIndex];
-      return userResponse;
-    }
-    return null;
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<IUserResponse | null> {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
+    return this.mapToResponse(user);
   }
 
-  remove(id: string): IUserResponse | null {
-    const userIndex = this.users.findIndex((user) => user.id === id);
-    if (userIndex > -1) {
-      const deletedUser = this.users[userIndex];
-      this.users.splice(userIndex, 1);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userResponse } = deletedUser;
-      return userResponse;
-    }
-    return null;
+  async remove(id: string): Promise<IUserResponse | null> {
+    const user = await this.prisma.user.delete({ where: { id } });
+    return this.mapToResponse(user);
+  }
+
+  private mapToResponse(user: User): IUserResponse {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role as unknown as UserRole,
+      status: user.status as unknown as UserStatus,
+    };
   }
 }

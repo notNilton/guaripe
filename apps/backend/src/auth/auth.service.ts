@@ -1,42 +1,50 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { LoginDto, RegisterDto } from '@project-valkyrie/dtos';
 import { IAuthResponse } from '@project-valkyrie/interfaces';
-import { ConfigService } from '../config/config.service';
+import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private configService: ConfigService,
+    private jwtService: JwtService,
   ) {}
 
-  register(registerDto: RegisterDto): IAuthResponse {
-    return this.usersService.create(registerDto);
+  async register(registerDto: RegisterDto): Promise<IAuthResponse> {
+    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    return this.usersService.create({
+      ...registerDto,
+      password: hashedPassword,
+    });
   }
 
-  login(loginDto: LoginDto): IAuthResponse {
-    const user = this.usersService.findByEmail(loginDto.email);
-    if (user && user.password === loginDto.password) {
+  async login(loginDto: LoginDto): Promise<{ accessToken: string; user: IAuthResponse }> {
+    const user = await this.usersService.findByEmail(loginDto.email);
+    if (user && (await bcrypt.compare(loginDto.password, user.password))) {
+      if (user.status === 'PENDING') {
+        throw new UnauthorizedException('Account pending approval');
+      }
+      if (user.status === 'INACTIVE') {
+        throw new UnauthorizedException('Account inactive');
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...result } = user;
-
-      // Example: Access JWT configuration when implementing JWT
-      // const token = this.generateJWT(result);
-      // console.log('JWT Config:', this.configService.jwt);
-
-      return result;
+      const payload = { email: user.email, sub: user.id, role: user.role, status: user.status };
+      
+      return {
+        accessToken: this.jwtService.sign(payload),
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role as any, // Cast to any to avoid type mismatch if types are slightly different
+            status: user.status as any,
+        },
+      };
     }
     throw new UnauthorizedException('Invalid credentials');
   }
-
-  // Example method showing how to use ConfigService for JWT
-  // Uncomment and implement when adding JWT functionality
-  /*
-  private generateJWT(payload: any): string {
-    const { secret, expiresIn } = this.configService.jwt;
-    // Use secret and expiresIn to generate JWT token
-    return 'jwt-token';
-  }
-  */
 }
