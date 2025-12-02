@@ -1,9 +1,14 @@
 const path = require('path');
+const nodeExternals = require('webpack-node-externals');
 
 module.exports = function (options, webpack) {
   return {
     ...options,
-    externals: [],
+    externals: [
+      nodeExternals({
+        allowlist: [/^@project-valkyrie/],
+      }),
+    ],
     output: {
       ...options.output,
       devtoolModuleFilenameTemplate: (info) => {

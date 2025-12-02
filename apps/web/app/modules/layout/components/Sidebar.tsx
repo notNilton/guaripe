@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router";
 import { LayoutDashboard, Users, Settings, LogOut } from "lucide-react";
+import { useAuth } from "../../auth/AuthContext";
 import "./Sidebar.css";
 
 export function Sidebar() {
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const getLinkClass = (path: string) => {
     // For root path, exact match is required to avoid it being active for all routes
@@ -43,13 +45,13 @@ export function Sidebar() {
       <div className="sidebar-footer">
         <div className="user-profile">
           <div className="avatar">
-            A
+            {user?.name?.charAt(0) || 'U'}
           </div>
           <div className="user-info">
-            <p className="user-name">Administrador</p>
-            <p className="user-email">admin@portoalegre.com</p>
+            <p className="user-name">{user?.name || 'User'}</p>
+            <p className="user-email">{user?.email || 'email@example.com'}</p>
           </div>
-          <button className="btn-logoff" title="Sair">
+          <button className="btn-logoff" title="Sair" onClick={logout}>
             <LogOut size={20} />
           </button>
         </div>

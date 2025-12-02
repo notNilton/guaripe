@@ -1,18 +1,29 @@
-import { redirect } from "react-router";
-import type { Route } from "./+types/protected";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "../modules/auth/AuthContext";
 import { ProtectedLayoutScreen } from "../modules/layout/screens/ProtectedLayoutScreen";
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const cookie = request.headers.get("Cookie");
-  const isAuthenticated = cookie?.includes("auth_token=mock_token");
+export default function ProtectedLayout() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
 
-  if (!isAuthenticated) {
-    return redirect("/login");
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isLoading, isAuthenticated, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
-  return null;
-}
+  if (!isAuthenticated) {
+    return null; // Will redirect in useEffect
+  }
 
-export default function ProtectedLayout() {
   return <ProtectedLayoutScreen />;
 }
