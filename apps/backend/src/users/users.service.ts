@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from '@project-valkyrie/dtos';
 import { IUserResponse, UserRole, UserStatus } from '@project-valkyrie/interfaces';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,11 +9,20 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<IUserResponse> {
+    const company = await this.prisma.company.findUnique({
+      where: { companyHash: createUserDto.companyHash },
+    });
+
+    if (!company) {
+      throw new BadRequestException('Invalid company hash');
+    }
+
     const user = await this.prisma.user.create({
       data: {
         name: createUserDto.name,
         email: createUserDto.email,
         password: createUserDto.password,
+        company: { connect: { id: company.id } },
       },
     });
 

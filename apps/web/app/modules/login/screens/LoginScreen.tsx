@@ -97,6 +97,14 @@ export function LoginScreen() {
             <a href="#" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
               Forgot your password?
             </a>
+            <div className="mt-4">
+              <p className="text-sm text-gray-400">
+                Don't have an account?{" "}
+                <a href="/register" className="text-purple-400 hover:text-purple-300 transition-colors">
+                  Create one
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </div>

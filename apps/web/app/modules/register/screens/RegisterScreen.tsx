@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../auth/AuthContext";
 
-export function LoginScreen() {
+export function RegisterScreen() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,16 +14,17 @@ export function LoginScreen() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
+    const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const companyHash = formData.get("companyHash") as string;
 
     try {
-      await login({ email, password });
-      navigate("/dashboard"); // Redirect to dashboard after successful login
+      await register({ name, email, password, companyHash });
+      navigate("/login"); // Redirect to login after successful registration
     } catch (err: any) {
-      console.error("Login failed:", err);
-      // Extract error message from backend response if available
-      const message = err.response?.data?.message || "Invalid email or password";
+      console.error("Registration failed:", err);
+      const message = err.response?.data?.message || "Registration failed";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -42,8 +43,8 @@ export function LoginScreen() {
       <div className="relative z-10 w-full max-w-md p-8">
         <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Welcome Back</h1>
-            <p className="text-gray-400">Enter your credentials to access the system</p>
+            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Create Account</h1>
+            <p className="text-gray-400">Join us and start your journey</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -52,6 +53,21 @@ export function LoginScreen() {
                 {error}
               </div>
             )}
+            
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                id="name"
+                required
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-500 transition-all duration-200 outline-none"
+                placeholder="John Doe"
+              />
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                 Email Address
@@ -62,7 +78,7 @@ export function LoginScreen() {
                 id="email"
                 required
                 className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-500 transition-all duration-200 outline-none"
-                placeholder="admin@valkyrie.com"
+                placeholder="john@example.com"
               />
             </div>
 
@@ -80,6 +96,20 @@ export function LoginScreen() {
               />
             </div>
 
+            <div>
+              <label htmlFor="companyHash" className="block text-sm font-medium text-gray-300 mb-2">
+                Company Hash
+              </label>
+              <input
+                type="text"
+                name="companyHash"
+                id="companyHash"
+                required
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-500 transition-all duration-200 outline-none"
+                placeholder="Enter your company hash"
+              />
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
@@ -88,15 +118,18 @@ export function LoginScreen() {
               {isLoading ? (
                 <span className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                "Sign In"
+                "Register"
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <a href="#" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
-              Forgot your password?
-            </a>
+            <p className="text-sm text-gray-400">
+              Already have an account?{" "}
+              <a href="/login" className="text-purple-400 hover:text-purple-300 transition-colors">
+                Sign in
+              </a>
+            </p>
           </div>
         </div>
       </div>
