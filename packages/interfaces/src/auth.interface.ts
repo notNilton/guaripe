@@ -19,3 +19,14 @@ export interface IAuthResponse {
   role: UserRole;
   status: UserStatus;
 }
+
+export interface IJwtPayload {
+  userId: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+}
+
+export interface IAuthenticatedRequest {
+  user: IJwtPayload;
+}
