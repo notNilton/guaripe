@@ -1,12 +1,12 @@
 import type { Route } from "./+types/employees-edit";
-import { EmployeeFormScreen } from "../modules/employees/pages/EmployeeForm";
+import { EmployeesCrudScreen } from "../modules/employees/pages/EmployeesCrud";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ }: Route.MetaArgs) {
   return [
     { title: "Editar Funcionário - Valkyrie System" },
   ];
 }
 
 export default function EditEmployee() {
-  return <EmployeeFormScreen />;
+  return <EmployeesCrudScreen />;
 }

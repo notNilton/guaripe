@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { useEmployees } from "../hooks/useEmployees";
+import { useEmployees } from "../hooks/employees.hook";
 import { useAuth } from "../../auth/context/auth.context";
 import { Users, Loader2, AlertCircle, Trash2, Edit } from "lucide-react";
 import "./EmployeesList.css";
@@ -9,7 +9,7 @@ export function EmployeesListScreen() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const companyId = user?.companyId;
-  
+
   const { employees, loading, error, deleteEmployee } = useEmployees(companyId);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -52,7 +52,7 @@ export function EmployeesListScreen() {
           <h1 className="page-title">Funcionários</h1>
           <p className="page-subtitle">Gerencie a equipe da sua empresa</p>
         </div>
-        <Link 
+        <Link
           to="/employees-create"
           className="btn-primary"
         >
@@ -82,8 +82,8 @@ export function EmployeesListScreen() {
             </thead>
             <tbody className="table-body">
               {employees.map((employee) => (
-                <tr 
-                  key={employee.id} 
+                <tr
+                  key={employee.id}
                   onClick={() => navigate(`/employees/${employee.id}`)}
                 >
                   <td className="table-cell">
@@ -108,17 +108,17 @@ export function EmployeesListScreen() {
                   </td>
                   <td className="table-cell text-right">
                     <div className="flex gap-2 justify-end">
-                      <button 
+                      <button
                         className="btn-icon"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/employees/${employee.id}/edit`);
+                          navigate(`/employees/${employee.id}`);
                         }}
                         title="Editar"
                       >
                         <Edit size={16} />
                       </button>
-                      <button 
+                      <button
                         className="btn-icon-delete"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -135,7 +135,7 @@ export function EmployeesListScreen() {
             </tbody>
           </table>
         </div>
-        
+
         {employees.length === 0 && !loading && (
           <div className="empty-state">
             <Users size={48} className="text-gray-500 mb-4" />

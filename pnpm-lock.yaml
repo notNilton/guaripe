@@ -315,6 +315,12 @@ importers:
       axios:
         specifier: ^1.13.2
         version: 1.13.2
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      class-validator:
+        specifier: ^0.14.3
+        version: 0.14.3
       isbot:
         specifier: ^5.1.31
         version: 5.1.32

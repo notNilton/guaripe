@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CreateEmployeeDto, EmployeeDto, UpdateEmployeeDto } from '@project-valkyrie/dtos';
-import { employeesApi } from '../api/employees.api';
+import { employeesApi } from '../services/employees.service';
 
 export function useEmployees(companyId?: string) {
   const [employees, setEmployees] = useState<EmployeeDto[]>([]);
