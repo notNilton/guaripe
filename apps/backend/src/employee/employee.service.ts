@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateEmployeeDto, UpdateEmployeeDto } from '@project-valkyrie/dtos';
 import { PrismaService } from '../prisma/prisma.service';
+import { UploadService } from './upload.service';
 import { Employee } from '@prisma/client';
 
 @Injectable()
 export class EmployeeService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private uploadService: UploadService,
+  ) {}
 
   async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
     // Verify company exists
@@ -37,6 +41,7 @@ export class EmployeeService {
         birthDate: createEmployeeDto.birthDate ? new Date(createEmployeeDto.birthDate) : null,
         address: createEmployeeDto.address,
         phone: createEmployeeDto.phone,
+        photoUrl: createEmployeeDto.photoUrl,
         jobTitle: createEmployeeDto.jobTitle,
         admissionDate: createEmployeeDto.admissionDate ? new Date(createEmployeeDto.admissionDate) : new Date(),
         company: { connect: { id: createEmployeeDto.companyId } },
@@ -107,6 +112,7 @@ export class EmployeeService {
         birthDate: updateEmployeeDto.birthDate ? new Date(updateEmployeeDto.birthDate) : undefined,
         address: updateEmployeeDto.address,
         phone: updateEmployeeDto.phone,
+        photoUrl: updateEmployeeDto.photoUrl,
         jobTitle: updateEmployeeDto.jobTitle,
         admissionDate: updateEmployeeDto.admissionDate ? new Date(updateEmployeeDto.admissionDate) : undefined,
       },
@@ -127,8 +133,54 @@ export class EmployeeService {
       throw new BadRequestException('Employee does not belong to this company');
     }
 
+    // Delete employee photo if exists
+    if (employee.photoUrl) {
+      await this.uploadService.deleteEmployeePhoto(employee.photoUrl);
+    }
+
     return this.prisma.employee.delete({
       where: { id },
+    });
+  }
+
+  /**
+   * Upload de foto do funcionário
+   */
+  async uploadPhoto(id: string, file: Express.Multer.File): Promise<Employee> {
+    const employee = await this.findOne(id);
+
+    // Delete old photo if exists
+    if (employee.photoUrl) {
+      await this.uploadService.deleteEmployeePhoto(employee.photoUrl);
+    }
+
+    // Upload new photo
+    const photoUrl = await this.uploadService.uploadEmployeePhoto(file, id);
+
+    // Update employee with new photo URL
+    return this.prisma.employee.update({
+      where: { id },
+      data: { photoUrl },
+    });
+  }
+
+  /**
+   * Remove foto do funcionário
+   */
+  async deletePhoto(id: string): Promise<void> {
+    const employee = await this.findOne(id);
+
+    if (!employee.photoUrl) {
+      throw new BadRequestException('Employee does not have a photo');
+    }
+
+    // Delete photo file
+    await this.uploadService.deleteEmployeePhoto(employee.photoUrl);
+
+    // Update employee to remove photo URL
+    await this.prisma.employee.update({
+      where: { id },
+      data: { photoUrl: null },
     });
   }
 }

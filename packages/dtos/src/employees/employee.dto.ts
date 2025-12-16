@@ -30,6 +30,10 @@ export class EmployeeDto {
   phone?: string;
 
   @IsString()
+  @IsOptional()
+  photoUrl?: string;
+
+  @IsString()
   @IsNotEmpty()
   jobTitle!: string;
 

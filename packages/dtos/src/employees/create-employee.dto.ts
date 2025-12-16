@@ -26,6 +26,10 @@ export class CreateEmployeeDto {
   phone?: string;
 
   @IsString()
+  @IsOptional()
+  photoUrl?: string;
+
+  @IsString()
   @IsNotEmpty()
   jobTitle!: string;
 

@@ -23,6 +23,10 @@ export class UpdateEmployeeDto {
 
   @IsString()
   @IsOptional()
+  photoUrl?: string;
+
+  @IsString()
+  @IsOptional()
   jobTitle?: string;
 
   @IsDateString()

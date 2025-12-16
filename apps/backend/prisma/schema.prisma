@@ -114,6 +114,7 @@ model Employee {
   birthDate     DateTime?
   address       String?
   phone         String?
+  photoUrl      String? // URL ou caminho da foto do funcionário
   jobTitle      String
   admissionDate DateTime  @default(now())
 
