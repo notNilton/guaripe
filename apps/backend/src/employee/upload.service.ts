@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 
 @Injectable()
 export class UploadService {
@@ -66,7 +66,7 @@ export class UploadService {
       // Retorna o caminho relativo (para armazenar no banco)
       return `/uploads/employees/${fileName}`;
     } catch (error) {
-      throw new BadRequestException(`Erro ao processar imagem: ${error.message}`);
+      throw new BadRequestException(`Erro ao processar imagem: ${(error as Error).message}`);
     }
   }
 
@@ -81,7 +81,7 @@ export class UploadService {
       await fs.unlink(filePath);
     } catch (error) {
       // Ignora erros se o arquivo não existir
-      console.warn(`Erro ao deletar foto: ${error.message}`);
+      console.warn(`Erro ao deletar foto: ${(error as Error).message}`);
     }
   }
 
@@ -103,7 +103,7 @@ export class UploadService {
         size: file.size,
       };
     } catch (error) {
-      throw new BadRequestException(`Erro ao ler metadados da imagem: ${error.message}`);
+      throw new BadRequestException(`Erro ao ler metadados da imagem: ${(error as Error).message}`);
     }
   }
 }
