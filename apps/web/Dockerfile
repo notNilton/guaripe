@@ -15,7 +15,7 @@ FROM nginx:alpine AS runner
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy static assets from builder stage
-COPY --from=builder /app/apps/web/build /usr/share/nginx/html
+COPY --from=builder /app/apps/web/build/client /usr/share/nginx/html
 
 # Create custom nginx config for SPA routing (fallback to index.html)
 RUN echo 'server { \
